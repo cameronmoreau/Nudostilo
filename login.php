@@ -1,11 +1,10 @@
 <?php require_once('php/core/init.php'); ?>
 
 <?php 
-
-	$users = DB::getInstance()->query("SELECT * FROM users");
-	if($users->error()) {
-		echo 'no users';
-	}
+	/*$new_user = DB::getInstance()->update('users', 1, array(
+		'gender' => 'F',
+		'email' => 'testemail123@mail.com'
+	));*/
 
 ?>
 
