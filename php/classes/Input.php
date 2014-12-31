@@ -29,4 +29,12 @@ class Input {
 		return escape(Input::get($name));
 	}
 
+	public static function radioOld($name, $value, $default = false) {
+		if(isset($_POST[$name])) {
+			if($_POST[$name] == $value) return 'checked';
+			else return;
+		} else if($default) {
+			return 'checked';
+		}
+	}
 }

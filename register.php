@@ -1,16 +1,15 @@
 <?php require_once('php/core/init.php'); ?>
 
 <?php
-
 	if(Input::exists()) {
 		$validate = new Validate();
 		$validation = $validate->check($_POST, array(
-			'first_name' => array(
+			'handle' => array(
 				'required' => true,
-				'min' => 2,
-				'max' => 20
+				'min' => 3,
+				'max' => 15
 			),
-			'last_name' => array(
+			'name' => array(
 				'required' => true,
 				'min' => 2,
 				'max' => 20
@@ -45,11 +44,29 @@
 
 		if($validation->passed()) {
 			//register user
-			echo 'all that data passed';
-		} else {
-			echo '<pre>';
-			print_r($validation->errors());
-			echo '</pre>';
+			if(Token::check(Input::get('token'))) {
+				$user = new User();
+				$salt = Hash::salt(32);
+				try {
+					$user->create(array(
+						'handle' => Input::get('handle'),
+						'email' => Input::get('email'),
+						'password' => Hash::make(Input::get('password'), $salt),
+						'password_salt' => $salt,
+						'active_key' => '234234',
+						'last_login_ip' => '0',
+						'name' => Input::get('name'),
+						'gender' => Input::get('gender'),
+						'birthdate' => date('Y-m-d'),
+						'created_at' => date('Y-m-d H:i:s')
+					));
+				} catch(Exception $e) {
+					die($e->getMessage());
+				}
+
+				echo 'all that data passed';
+				Session::flash('success', 'You registered successfully');
+			}
 		}
 	}
 
@@ -65,13 +82,25 @@
 	<div class="container">
 		<div class="col-md-6 col-md-offset-3 login-box">
 			<h2 class="text-center">Register for Nudostilo</h2>
+			<?php
+				if(Input::exists()) {
+					if(!$validation->passed()) {
+						echo "<div class='alert alert-danger'><ul>";
+						foreach($validation->errors() as $error) {
+							echo '<li>'.$error.'</li>';
+						}
+						echo '</ul></div>';
+					}
+				}
+			?>
 			<form action="" method="post">
+				<input type="hidden" name="token" value="<?php echo Token::generate(); ?>">
 				<div class="row form-group">
 					<div class="col-md-6">
-						<input type="text" class="form-control" placeholder="First name" name="first_name" autocomplete="off" value="<?php echo Input::old('first_name') ?>">
+						<input type="text" class="form-control" placeholder="Nickname" name="handle" autocomplete="off" value="<?php echo Input::old('handle') ?>">
 					</div>
 					<div class="col-md-6">
-						<input type="text" class="form-control" placeholder="Last name" name="last_name" autocomplete="off" value="<?php echo Input::old('last_name') ?>">
+						<input type="text" class="form-control" placeholder="Name" name="name" autocomplete="off" value="<?php echo Input::old('name') ?>">
 					</div>
 				</div>
 				<div class="form-group">
@@ -88,8 +117,8 @@
 				<div class="row form-group">
 					<div class="col-md-6">
 						<label>Gender</label><br>
-						<label class="radio-inline"><input type="radio" name="gender" value="M"> Male</label> 
-						<label class="radio-inline"><input type="radio" name="gender" value="F"> Female</label>
+						<label class="radio-inline"><input type="radio" name="gender" value="M" <?php echo Input::radioOld('gender', 'M', true); ?>> Male</label> 
+						<label class="radio-inline"><input type="radio" name="gender" value="F" <?php echo Input::radioOld('gender', 'F'); ?>> Female</label>
 					</div>
 					<div class="col-md-6 row">
 						<label>Birthday</label><br>
@@ -98,7 +127,8 @@
 								<option value="0">Month</option>
 								<?php
 									foreach(cal_info(0)['months'] as $key => $month) {
-										echo "<option value={$key}>".$month."</option>";
+										$s = ($key == Input::old('birth_month') ? ' selected' : '');
+										echo "<option value={$key}{$s}>".$month."</option>";
 									}
 								?>
 							</select>
@@ -108,7 +138,8 @@
 								<option value="0">Day</option>
 								<?php
 									foreach(range(1, 31) as $key => $day) {
-										echo "<option value={$key}>".$day."</option>";
+										$s = ($day == Input::old('birth_day') ? ' selected' : '');
+										echo "<option value={$day}{$s}>".$day."</option>";
 									}
 								?>
 							</select>
@@ -119,7 +150,8 @@
 								<?php
 									$year = date('Y');
 									foreach(range($year, $year - 110) as $year) {
-										echo "<option value={$year}>".$year."</option>";
+										$s = ($year == Input::old('birth_year') ? ' selected' : '');
+										echo "<option value={$year}{$s}>".$year."</option>";
 									}
 								?>
 							</select>
