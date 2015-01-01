@@ -1,10 +1,36 @@
 <?php require_once('php/core/init.php'); ?>
+<?php
+	$login = new User();
+	if($login->isLoggedIn()) {
+		Redirect::to('index.php');
+	}
+?>
 
-<?php 
-	/*$new_user = DB::getInstance()->update('users', 1, array(
-		'gender' => 'F',
-		'email' => 'testemail123@mail.com'
-	));*/
+<?php
+	if(Input::exists()) {
+		if(Token::check(Input::get('token'))) {
+			$validate = new Validate();
+			$validation = $validate->check($_POST, array(
+				'email' => array(
+					'required' => true
+				),
+				'password' => array(
+					'required' => true
+				)
+			));
+
+			if($validation->passed()) {
+				$user = new User();
+				$login = $user->login(Input::get('email'), Input::get('password'));
+
+				if($login) {
+					echo 'You good';
+				}
+			} else {
+				print_r($validation->errors());
+			}
+		}
+	}
 
 ?>
 
@@ -18,12 +44,13 @@
 	<div class="container">
 		<div class="col-md-6 col-md-offset-3 login-box">
 			<h2 class="text-center">Login to Nudostilo</h2>
-			<form>
+			<form action="login.php" method="POST">
+				<input type="hidden" name="token" value="<?php echo Token::generate(); ?>">
 				<div class="form-group">
-					<input type="text" class="form-control" placeholder="Email">
+					<input type="text" class="form-control" placeholder="Email or Handle" name="email" value="<?php echo Input::old('email'); ?>">
 				</div>
 				<div class="form-group">
-					<input type="password" class="form-control" placeholder="Password">
+					<input type="password" class="form-control" placeholder="Password" name="password">
 				</div>
 				<input type="submit" value="Login" class="btn btn-success btn-block">
 				<div class="row">

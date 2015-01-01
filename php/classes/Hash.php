@@ -14,4 +14,8 @@ class Hash {
 		return self::make(uniqid());
 	}
 
+	public static function generateKey() {
+		return md5(uniqid());
+	}
+
 }

@@ -46,6 +46,11 @@ class Validate {
 								$this->addError("It looks like your {$item_name} is already in use");
 							}
 						break;
+						case 'limited_chars':
+							if(preg_match("/^[a-zA-Z0-9_]+$/", $value) == 0) {
+								$this->addError("{$item_name} can contain no spaces or special characters. A-Z, 0-9, _");
+							}
+						break;
 					}
 				}
 			}

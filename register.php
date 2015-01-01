@@ -6,6 +6,8 @@
 		$validation = $validate->check($_POST, array(
 			'handle' => array(
 				'required' => true,
+				'unique'=> 'users',
+				'limited_chars' => true,
 				'min' => 3,
 				'max' => 15
 			),
@@ -47,13 +49,15 @@
 			if(Token::check(Input::get('token'))) {
 				$user = new User();
 				$salt = Hash::salt(32);
+				$active_key = Hash::generateKey();
 				try {
+					$salt = Hash::salt(32);
 					$user->create(array(
 						'handle' => Input::get('handle'),
 						'email' => Input::get('email'),
 						'password' => Hash::make(Input::get('password'), $salt),
 						'password_salt' => $salt,
-						'active_key' => '234234',
+						'active_key' => $active_key,
 						'last_login_ip' => '0',
 						'name' => Input::get('name'),
 						'gender' => Input::get('gender'),
@@ -64,8 +68,8 @@
 					die($e->getMessage());
 				}
 
-				echo 'all that data passed';
 				Session::flash('success', 'You registered successfully');
+				Redirect::to('index.php');
 			}
 		}
 	}
